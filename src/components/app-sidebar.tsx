@@ -1,4 +1,7 @@
+'use client';
+
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { useRouter } from "next/navigation";
 
 import {
   Sidebar,
@@ -11,34 +14,20 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-// Menu items.
+// Menu items with their routes
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/home",
     icon: Home,
   },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
+
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
   },
-]
+];
 
 export function AppSidebar() {
   return (
