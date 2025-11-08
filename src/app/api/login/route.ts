@@ -9,7 +9,7 @@ let convexClient: ConvexHttpClient | null = null;
 function getConvex(): ConvexHttpClient | null {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL;
   if (!url) return null;
-  if (!convexClient) convexClient = new ConvexHttpClient(url);
+  convexClient ??= new ConvexHttpClient(url); // <-- satisfies prefer-nullish-coalescing
   return convexClient;
 }
 
