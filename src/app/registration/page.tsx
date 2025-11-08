@@ -27,11 +27,8 @@ export default function RegistrationPage() {
     })
     const [errors, setErrors] = useState<FormErrors>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
-        null
-    )
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-    // Convex mutation hook
     const registerUser = useMutation(api.users.registerUser)
 
     const onChange =
@@ -62,7 +59,7 @@ export default function RegistrationPage() {
         if (/[A-Z]/.test(p)) score++
         if (/[0-9]/.test(p)) score++
         if (/[^A-Za-z0-9]/.test(p)) score++
-        return score // 0..4
+        return score
     }, [form.password])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -76,14 +73,12 @@ export default function RegistrationPage() {
 
         setIsSubmitting(true)
         try {
-            // Call Convex mutation to register user
             const result = await registerUser({
                 name: form.name,
                 email: form.email,
                 password: form.password,
             })
 
-            // Automatically log in the user after successful registration
             const userData = {
                 _id: result.userId,
                 name: form.name,
@@ -91,7 +86,6 @@ export default function RegistrationPage() {
                 createdAt: Date.now(),
             }
 
-            // Store user data in localStorage (automatically logged in)
             localStorage.setItem('user', JSON.stringify(userData))
 
             setMessage({ 
@@ -99,15 +93,15 @@ export default function RegistrationPage() {
                 text: 'Registration successful! Redirecting...' 
             })
 
-            // Redirect to home page after 1 second
             setTimeout(() => {
                 router.push('/')
             }, 1000)
             
-        } catch (err: any) {
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.'
             setMessage({ 
                 type: 'error', 
-                text: err.message || 'Registration failed. Please try again.' 
+                text: errorMessage
             })
         } finally {
             setIsSubmitting(false)
@@ -212,7 +206,6 @@ export default function RegistrationPage() {
     )
 }
 
-/* Simple inline styles so the file is self-contained */
 const styles: Record<string, React.CSSProperties> = {
     container: {
         maxWidth: 520,
@@ -258,7 +251,7 @@ function strengthStyle(score: number): React.CSSProperties {
     const colors = ['#eee', '#e4572e', '#f4a261', '#2a9d8f', '#2b8aee']
     const widths = ['8px', '24px', '48px', '72px', '96px']
     return {
-        background: colors[score] || colors[0],
-        width: widths[score] || widths[0],
+        background: colors[score] ?? colors[0],
+        width: widths[score] ?? widths[0],
     }
 }

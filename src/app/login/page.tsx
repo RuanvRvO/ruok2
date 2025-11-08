@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useQuery } from "convex/react"
-import { api } from "../../../convex/_generated/api"
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -13,6 +11,16 @@ type FormData = {
 }
 
 type FormErrors = Partial<Record<keyof FormData, string>>
+
+type ApiResponse = {
+    message: string
+    user?: {
+        _id: string
+        name: string
+        email: string
+        createdAt: number
+    }
+}
 
 export default function LoginPage() {
     const router = useRouter()
@@ -53,7 +61,6 @@ export default function LoginPage() {
 
         setIsSubmitting(true)
         try {
-            // Call Convex query to validate login
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -63,13 +70,17 @@ export default function LoginPage() {
                 }),
             })
 
-            const data = await response.json()
+            const data = await response.json() as ApiResponse
 
             if (!response.ok) {
-                throw new Error(data.message || 'Login failed')
+                throw new Error(data.message ?? 'Login failed')
             }
 
-            // Store user data (in production, use proper session management)
+            if (!data.user) {
+                throw new Error('No user data returned')
+            }
+
+            // Store user data
             if (form.rememberMe) {
                 localStorage.setItem('user', JSON.stringify(data.user))
             } else {
@@ -81,15 +92,15 @@ export default function LoginPage() {
                 text: 'Login successful! Redirecting...' 
             })
 
-            // Redirect to home page after successful login
             setTimeout(() => {
                 router.push('/')
             }, 1000)
 
-        } catch (err: any) {
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Login failed. Please try again.'
             setMessage({ 
                 type: 'error', 
-                text: err.message || 'Login failed. Please try again.' 
+                text: errorMessage
             })
         } finally {
             setIsSubmitting(false)
@@ -157,7 +168,7 @@ export default function LoginPage() {
                 )}
 
                 <div style={styles.signupPrompt}>
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <Link href="/registration" style={styles.signupLink}>
                         Sign up
                     </Link>
@@ -167,7 +178,6 @@ export default function LoginPage() {
     )
 }
 
-/* Simple inline styles */
 const styles: Record<string, React.CSSProperties> = {
     container: {
         maxWidth: 420,

@@ -18,11 +18,12 @@ export function useUser() {
     const userFromLocal = localStorage.getItem('user')
     const userFromSession = sessionStorage.getItem('user')
     
-    const userData = userFromLocal || userFromSession
+    const userData = userFromLocal ?? userFromSession
     
     if (userData) {
       try {
-        setUser(JSON.parse(userData))
+        const parsedUser = JSON.parse(userData) as User
+        setUser(parsedUser)
       } catch (error) {
         console.error('Error parsing user data:', error)
         setUser(null)
