@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useRouter } from 'next/navigation'
@@ -16,7 +16,7 @@ type FormData = {
 
 type FormErrors = Partial<Record<keyof FormData, string>>
 
-export default function RegistrationPage() {
+function RegistrationForm() {
     const router = useRouter()
     const [form, setForm] = useState<FormData>({
         name: '',
@@ -88,19 +88,19 @@ export default function RegistrationPage() {
 
             localStorage.setItem('user', JSON.stringify(userData))
 
-            setMessage({ 
-                type: 'success', 
-                text: 'Registration successful! Redirecting...' 
+            setMessage({
+                type: 'success',
+                text: 'Registration successful! Redirecting...'
             })
 
             setTimeout(() => {
                 router.push('/')
             }, 1000)
-            
+
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.'
-            setMessage({ 
-                type: 'error', 
+            setMessage({
+                type: 'error',
                 text: errorMessage
             })
         } finally {
@@ -204,6 +204,25 @@ export default function RegistrationPage() {
             </form>
         </main>
     )
+}
+
+export default function RegistrationPage() {
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) {
+        return (
+            <main style={styles.container}>
+                <h1 style={styles.title}>Create an account</h1>
+                <div>Loading...</div>
+            </main>
+        )
+    }
+
+    return <RegistrationForm />
 }
 
 const styles: Record<string, React.CSSProperties> = {
