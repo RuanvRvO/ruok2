@@ -7,6 +7,5 @@ export default defineSchema({
     email: v.string(),
     passwordHash: v.string(),
     createdAt: v.number(),
-  })
-    .index("by_email", ["email"]), // Index for fast email lookups
+  }).index("by_email", ["email"]),
 });

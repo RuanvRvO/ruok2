@@ -1,7 +1,6 @@
 'use client';
 
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
-import { useRouter } from "next/navigation";
+import { Home, Settings } from "lucide-react"
 
 import {
   Sidebar,
