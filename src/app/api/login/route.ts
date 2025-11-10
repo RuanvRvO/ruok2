@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Your loginUser is a QUERY (not mutation) in convex/users.ts
+    // loginUser is now a MUTATION (changed to support bcrypt)
     let user: LoginUserResult | null = null;
     try {
-      const res: unknown = await client.query(api.users.loginUser, { email, password });
+      const res: unknown = await client.mutation(api.users.loginUser, { email, password });
       user = res as LoginUserResult;
     } catch (convexErr: unknown) {
       // Your Convex code throws "Invalid email or password" on bad creds
