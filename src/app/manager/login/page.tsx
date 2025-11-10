@@ -22,7 +22,7 @@ export default function ManagerLoginPage() {
   const router = useRouter()
   const { login } = useManager()
 
-  const loginManager = useMutation(apiAny.managers.loginManager)
+  const loginManager = useMutation(apiAny.users.loginManager)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

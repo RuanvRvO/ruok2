@@ -21,36 +21,36 @@ export default function ManagerDashboardPage() {
 
   // Queries
   const organization = useQuery(
-    apiAny.organizations.getOrganizationByManager,
+    apiAny.users.getOrganizationByManager,
     manager ? { managerId: manager._id } : 'skip'
   )
   const organizationDetails = useQuery(
-    apiAny.organizations.getOrganizationDetails,
+    apiAny.users.getOrganizationDetails,
     organization ? { organizationId: organization._id } : 'skip'
   )
   const analytics = useQuery(
-    apiAny.analytics.getOrganizationAnalytics,
-    organization ? { organizationId: organization._id, days: 30 } : 'skip'
+    apiAny.users.getOrganizationAnalytics,
+    organization ? { organizationId: organization._id } : 'skip'
   )
   const groupAnalytics = useQuery(
-    apiAny.analytics.getGroupAnalytics,
-    organization ? { organizationId: organization._id, days: 30 } : 'skip'
+    apiAny.users.getGroupAnalytics,
+    organization ? { organizationId: organization._id } : 'skip'
   )
   const employees = useQuery(
-    apiAny.employees.getEmployeesByOrganization,
+    apiAny.users.getEmployeesByOrganization,
     organization ? { organizationId: organization._id } : 'skip'
   )
   const groups = useQuery(
-    apiAny.groups.getGroupsByOrganization,
+    apiAny.users.getGroupsByOrganization,
     organization ? { organizationId: organization._id } : 'skip'
   )
 
   // Mutations
-  const addEmployee = useMutation(apiAny.employees.addEmployee)
-  const createGroup = useMutation(apiAny.groups.createGroup)
-  const updateEmployeeGroup = useMutation(apiAny.employees.updateEmployeeGroup)
-  const deleteEmployee = useMutation(apiAny.employees.deleteEmployee)
-  const deleteGroup = useMutation(apiAny.groups.deleteGroup)
+  const addEmployee = useMutation(apiAny.users.addEmployee)
+  const createGroup = useMutation(apiAny.users.createGroup)
+  const updateEmployeeGroup = useMutation(apiAny.users.updateEmployeeGroup)
+  const deleteEmployee = useMutation(apiAny.users.deleteEmployee)
+  const deleteGroup = useMutation(apiAny.users.deleteGroup)
 
   // State for forms
   const [newEmployeeEmail, setNewEmployeeEmail] = useState('')

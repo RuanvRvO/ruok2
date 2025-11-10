@@ -26,19 +26,19 @@ function EmployeeRespondContent() {
 
   // Validate token
   const tokenValidation = useQuery(
-    apiAny.emailTokens.validateToken,
+    apiAny.users.validateToken,
     token ? { token } : 'skip'
   )
 
   // Check if already responded today
   const hasResponded = useQuery(
-    apiAny.responses.hasRespondedToday,
-    tokenValidation?.valid && tokenValidation.employeeId
+    apiAny.users.hasRespondedToday,
+    tokenValidation?.employeeId
       ? { employeeId: tokenValidation.employeeId }
       : 'skip'
   )
 
-  const submitResponse = useMutation(apiAny.responses.submitResponse)
+  const submitResponse = useMutation(apiAny.users.submitResponse)
 
   useEffect(() => {
     if (hasResponded?.hasResponded && hasResponded.response) {

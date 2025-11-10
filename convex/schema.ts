@@ -33,25 +33,21 @@ export default defineSchema({
   groups: defineTable({
     name: v.string(),
     organizationId: v.id("organizations"),
+    description: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_organization", ["organizationId"]),
 
   // Daily wellbeing responses from employees
   responses: defineTable({
     employeeId: v.id("employees"),
-    organizationId: v.id("organizations"),
-    groupId: v.optional(v.id("groups")),
+    date: v.number(), // Date of the response (normalized to start of day)
     status: v.union(v.literal("green"), v.literal("amber"), v.literal("red")),
-    customResponse: v.optional(v.string()),
-    isAnonymous: v.boolean(), // Whether custom response is anonymous
-    responseDate: v.number(), // Date of the response (normalized to start of day)
+    text: v.optional(v.string()), // Optional custom text response
+    isAnonymous: v.boolean(), // Whether text response is anonymous
     createdAt: v.number(), // Actual timestamp when submitted
   })
     .index("by_employee", ["employeeId"])
-    .index("by_organization", ["organizationId"])
-    .index("by_group", ["groupId"])
-    .index("by_date", ["responseDate"])
-    .index("by_org_and_date", ["organizationId", "responseDate"]),
+    .index("by_employee_date", ["employeeId", "date"]),
 
   // Email tokens for secure response links
   emailTokens: defineTable({

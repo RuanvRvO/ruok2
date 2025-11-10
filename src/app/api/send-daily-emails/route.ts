@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     // Get all organizations
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const organizations = await (convex as any).query(api.organizations.getAllOrganizations)
+    const organizations = await (convex as any).query(api.users.getAllOrganizations)
 
     let totalEmailsSent = 0
     const errors: string[] = []
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     for (const org of organizations as any[]) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const employees = await (convex as any).query(api.employees.getEmployeesByOrganization, {
+        const employees = await (convex as any).query(api.users.getEmployeesByOrganization, {
           organizationId: org._id,
         })
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
           try {
             // Generate token for this employee
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const tokenResult = await (convex as any).mutation(api.emailTokens.generateEmailToken, {
+            const tokenResult = await (convex as any).mutation(api.users.generateEmailToken, {
               employeeId: employee._id,
             })
 

@@ -25,8 +25,8 @@ export default function ManagerRegisterPage() {
   const router = useRouter()
   const { login } = useManager()
 
-  const registerManager = useMutation(apiAny.managers.registerManager)
-  const createOrganization = useMutation(apiAny.organizations.createOrganization)
+  const registerManager = useMutation(apiAny.users.registerManager)
+  const createOrganization = useMutation(apiAny.users.createOrganization)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,13 +46,13 @@ export default function ManagerRegisterPage() {
       // Create organization with employees
       await createOrganization({
         name: organizationName,
-        managerId: managerResult.managerId,
+        managerId: managerResult._id,
         employeeEmails: emails,
       })
 
       // Login the manager
       login({
-        _id: managerResult.managerId,
+        _id: managerResult._id,
         name,
         email,
         createdAt: Date.now(),
