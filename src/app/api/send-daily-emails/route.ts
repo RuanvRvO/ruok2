@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ConvexHttpClient } from 'convex/browser'
-import { api } from '../../../../convex/_generated/api'
-
-// Initialize Convex client
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
+
+// Helper to get Convex client
+function getConvexClient() {
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL
+  if (!url) {
+    throw new Error('NEXT_PUBLIC_CONVEX_URL environment variable is not set')
+  }
+  return new ConvexHttpClient(url)
+}
 
 // This endpoint should be called by a cron job daily at 4pm
 export async function POST(request: NextRequest) {
@@ -17,23 +22,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const convex = getConvexClient()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const api = (await import('../../../../convex/_generated/api')).api as any
+
     // Get all organizations
-    const organizations = await convex.query(api.organizations.getAllOrganizations as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const organizations = await (convex as any).query(api.organizations.getAllOrganizations)
 
     let totalEmailsSent = 0
     const errors: string[] = []
 
     // For each organization, get all active employees and send emails
-    for (const org of organizations) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const org of organizations as any[]) {
       try {
-        const employees = await convex.query(api.employees.getEmployeesByOrganization, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const employees = await (convex as any).query(api.employees.getEmployeesByOrganization, {
           organizationId: org._id,
         })
 
-        for (const employee of employees) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const employee of employees as any[]) {
           try {
             // Generate token for this employee
-            const tokenResult = await convex.mutation(api.emailTokens.generateEmailToken, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const tokenResult = await (convex as any).mutation(api.emailTokens.generateEmailToken, {
               employeeId: employee._id,
             })
 

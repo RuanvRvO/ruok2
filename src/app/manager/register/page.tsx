@@ -1,11 +1,18 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from 'convex/react'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { api } from '../../../../convex/_generated/api'
 import { useManager } from '@/hooks/useManager'
 import Link from 'next/link'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const apiAny = api as any
 
 export default function ManagerRegisterPage() {
   const [name, setName] = useState('')
@@ -18,8 +25,8 @@ export default function ManagerRegisterPage() {
   const router = useRouter()
   const { login } = useManager()
 
-  const registerManager = useMutation(api.managers.registerManager)
-  const createOrganization = useMutation(api.organizations.createOrganization)
+  const registerManager = useMutation(apiAny.managers.registerManager)
+  const createOrganization = useMutation(apiAny.organizations.createOrganization)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,11 +1,18 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from 'convex/react'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { api } from '../../../../convex/_generated/api'
 import { useManager } from '@/hooks/useManager'
 import Link from 'next/link'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const apiAny = api as any
 
 export default function ManagerLoginPage() {
   const [email, setEmail] = useState('')
@@ -15,7 +22,7 @@ export default function ManagerLoginPage() {
   const router = useRouter()
   const { login } = useManager()
 
-  const loginManager = useMutation(api.managers.loginManager)
+  const loginManager = useMutation(apiAny.managers.loginManager)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

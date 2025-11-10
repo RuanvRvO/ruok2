@@ -1,10 +1,18 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useQuery, useMutation } from 'convex/react'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
+
+// Type assertion to allow access to new API functions before Convex deployment
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const apiAny = api as any
 
 function EmployeeRespondContent() {
   const searchParams = useSearchParams()
@@ -18,19 +26,19 @@ function EmployeeRespondContent() {
 
   // Validate token
   const tokenValidation = useQuery(
-    api.emailTokens.validateToken,
+    apiAny.emailTokens.validateToken,
     token ? { token } : 'skip'
   )
 
   // Check if already responded today
   const hasResponded = useQuery(
-    api.responses.hasRespondedToday,
+    apiAny.responses.hasRespondedToday,
     tokenValidation?.valid && tokenValidation.employeeId
       ? { employeeId: tokenValidation.employeeId }
       : 'skip'
   )
 
-  const submitResponse = useMutation(api.responses.submitResponse)
+  const submitResponse = useMutation(apiAny.responses.submitResponse)
 
   useEffect(() => {
     if (hasResponded?.hasResponded && hasResponded.response) {
