@@ -1,8 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { ConvexHttpClient } from 'convex/browser'
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
+
+// Define types for the data structures
+type Organization = {
+  _id: Id<'organizations'>
+  name: string
+  managerId: Id<'managers'>
+  createdAt: number
+}
+
+type Employee = {
+  _id: Id<'employees'>
+  email: string
+  organizationId: Id<'organizations'>
+  groupId?: Id<'groups'>
+  createdAt: number
+  isActive: boolean
+}
+
+type TokenResult = {
+  tokenId: Id<'emailTokens'>
+  token: string
+}
 
 // Helper to get Convex client
 function getConvexClient() {
@@ -18,42 +43,35 @@ export async function POST(request: NextRequest) {
   try {
     // Verify the request is from a valid source (cron job)
     const authHeader = request.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET ?? ''}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const convex = getConvexClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const api = (await import('../../../../convex/_generated/api')).api as any
-
     // Get all organizations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const organizations = await (convex as any).query(api.users.getAllOrganizations)
+    const organizations = await convex.query(api.users.getAllOrganizations) as Organization[]
 
     let totalEmailsSent = 0
     const errors: string[] = []
 
     // For each organization, get all active employees and send emails
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const org of organizations as any[]) {
+    for (const org of organizations) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const employees = await (convex as any).query(api.users.getEmployeesByOrganization, {
+        const employees = await convex.query(api.users.getEmployeesByOrganization, {
           organizationId: org._id,
-        })
+        }) as Employee[]
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const employee of employees as any[]) {
+        for (const employee of employees) {
           try {
             // Generate token for this employee
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const tokenResult = await (convex as any).mutation(api.users.generateEmailToken, {
+            const tokenResult = await convex.mutation(api.users.generateEmailToken, {
               employeeId: employee._id,
-            })
+            }) as TokenResult
 
             // Construct response URL
-            const responseUrl = `${process.env.NEXT_PUBLIC_APP_URL}/employee/respond?token=${tokenResult.token}`
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+            const responseUrl = `${appUrl}/employee/respond?token=${tokenResult.token}`
 
             // Send email using your preferred email service
             // This is a template - replace with actual email service
@@ -65,11 +83,13 @@ export async function POST(request: NextRequest) {
 
             totalEmailsSent++
           } catch (err) {
-            errors.push(`Failed to send to ${employee.email}: ${err}`)
+            const errorMessage = err instanceof Error ? err.message : String(err)
+            errors.push(`Failed to send to ${employee.email}: ${errorMessage}`)
           }
         }
       } catch (err) {
-        errors.push(`Failed to process organization ${org.name}: ${err}`)
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        errors.push(`Failed to process organization ${org.name}: ${errorMessage}`)
       }
     }
 
@@ -98,7 +118,7 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM || 'noreply@yourdomain.com',
+        from: process.env.EMAIL_FROM ?? 'noreply@yourdomain.com',
         to: [to],
         subject,
         html,
@@ -110,7 +130,7 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
       throw new Error(`Failed to send email: ${error}`)
     }
 
-    return await response.json()
+    return (await response.json()) as { id: string }
   }
 
   // Option 2: Using SendGrid
@@ -123,7 +143,7 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: to }] }],
-        from: { email: process.env.EMAIL_FROM || 'noreply@yourdomain.com' },
+        from: { email: process.env.EMAIL_FROM ?? 'noreply@yourdomain.com' },
         subject,
         content: [{ type: 'text/html', value: html }],
       }),

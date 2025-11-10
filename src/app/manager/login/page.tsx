@@ -6,13 +6,9 @@ export const dynamic = 'force-dynamic'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from 'convex/react'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { api } from '../../../../convex/_generated/api'
 import { useManager } from '@/hooks/useManager'
 import Link from 'next/link'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const apiAny = api as any
 
 export default function ManagerLoginPage() {
   const [email, setEmail] = useState('')
@@ -22,7 +18,7 @@ export default function ManagerLoginPage() {
   const router = useRouter()
   const { login } = useManager()
 
-  const loginManager = useMutation(apiAny.users.loginManager)
+  const loginManager = useMutation(api.users.loginManager)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,7 +113,7 @@ export default function ManagerLoginPage() {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/manager/register" className="font-medium text-blue-600 hover:text-blue-500">
                 Create an organization
               </Link>

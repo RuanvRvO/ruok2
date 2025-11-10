@@ -21,7 +21,7 @@ export default function HomePage() {
             Employee Wellbeing Tracking
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            A simple, effective way to track and improve your team's emotional wellbeing through daily check-ins
+            A simple, effective way to track and improve your team&apos;s emotional wellbeing through daily check-ins
           </p>
         </div>
 

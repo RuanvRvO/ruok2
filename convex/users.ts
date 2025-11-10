@@ -329,10 +329,29 @@ export const createGroup = mutation({
 export const getGroupsByOrganization = query({
   args: { organizationId: v.id("organizations") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const groups = await ctx.db
       .query("groups")
       .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
       .collect();
+
+    // Add employee count to each group
+    const groupsWithCounts = await Promise.all(
+      groups.map(async (group) => {
+        const employees = await ctx.db
+          .query("employees")
+          .filter((q) => q.eq(q.field("groupId"), group._id))
+          .collect();
+
+        const activeEmployees = employees.filter((e) => e.isActive);
+
+        return {
+          ...group,
+          employeeCount: activeEmployees.length,
+        };
+      })
+    );
+
+    return groupsWithCounts;
   },
 });
 
@@ -451,7 +470,18 @@ export const hasRespondedToday = query({
       )
       .first();
 
-    return !!response;
+    if (!response) {
+      return { hasResponded: false, response: null };
+    }
+
+    return {
+      hasResponded: true,
+      response: {
+        status: response.status,
+        customResponse: response.text,
+        isAnonymous: response.isAnonymous,
+      },
+    };
   },
 });
 
@@ -652,14 +682,22 @@ export const getGroupAnalytics = query({
           ? (todayResponses.length / activeEmployees.length) * 100
           : 0;
 
+      const statusCounts = {
+        green: todayResponses.filter((r) => r.status === "green").length,
+        amber: todayResponses.filter((r) => r.status === "amber").length,
+        red: todayResponses.filter((r) => r.status === "red").length,
+      };
+
       groupAnalytics.push({
         groupId: group._id,
         groupName: group.name,
+        employeeCount: activeEmployees.length,
         totalEmployees: activeEmployees.length,
         responsesToday: todayResponses.length,
         responseRate,
         status: status.status,
         averageScore: status.average,
+        statusCounts,
       });
     }
 
@@ -736,20 +774,20 @@ export const validateToken = query({
       .first();
 
     if (!tokenRecord) {
-      throw new Error("Invalid token");
+      return null;
     }
 
     if (tokenRecord.used) {
-      throw new Error("Token already used");
+      return null;
     }
 
     if (tokenRecord.expiresAt < Date.now()) {
-      throw new Error("Token expired");
+      return null;
     }
 
     const employee = await ctx.db.get(tokenRecord.employeeId);
     if (!employee) {
-      throw new Error("Employee not found");
+      return null;
     }
 
     return {

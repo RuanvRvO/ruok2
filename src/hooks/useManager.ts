@@ -1,7 +1,5 @@
 'use client'
 
-import { useQuery } from "convex/react"
-import { api } from "../../convex/_generated/api"
 import { useEffect, useState } from "react"
 import type { Id } from "../../convex/_generated/dataModel"
 
@@ -21,7 +19,8 @@ export function useManager() {
     const storedManager = localStorage.getItem('manager')
     if (storedManager) {
       try {
-        setManager(JSON.parse(storedManager))
+        const parsed = JSON.parse(storedManager) as Manager
+        setManager(parsed)
       } catch (e) {
         console.error('Failed to parse manager data:', e)
         localStorage.removeItem('manager')

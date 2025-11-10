@@ -3,13 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from 'convex/react'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { api } from '../../../../convex/_generated/api'
 import { useManager } from '@/hooks/useManager'
 import type { Id } from '../../../../convex/_generated/dataModel'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const apiAny = api as any
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -21,36 +17,36 @@ export default function ManagerDashboardPage() {
 
   // Queries
   const organization = useQuery(
-    apiAny.users.getOrganizationByManager,
+    api.users.getOrganizationByManager,
     manager ? { managerId: manager._id } : 'skip'
   )
   const organizationDetails = useQuery(
-    apiAny.users.getOrganizationDetails,
+    api.users.getOrganizationDetails,
     organization ? { organizationId: organization._id } : 'skip'
   )
   const analytics = useQuery(
-    apiAny.users.getOrganizationAnalytics,
+    api.users.getOrganizationAnalytics,
     organization ? { organizationId: organization._id } : 'skip'
   )
   const groupAnalytics = useQuery(
-    apiAny.users.getGroupAnalytics,
+    api.users.getGroupAnalytics,
     organization ? { organizationId: organization._id } : 'skip'
   )
   const employees = useQuery(
-    apiAny.users.getEmployeesByOrganization,
+    api.users.getEmployeesByOrganization,
     organization ? { organizationId: organization._id } : 'skip'
   )
   const groups = useQuery(
-    apiAny.users.getGroupsByOrganization,
+    api.users.getGroupsByOrganization,
     organization ? { organizationId: organization._id } : 'skip'
   )
 
   // Mutations
-  const addEmployee = useMutation(apiAny.users.addEmployee)
-  const createGroup = useMutation(apiAny.users.createGroup)
-  const updateEmployeeGroup = useMutation(apiAny.users.updateEmployeeGroup)
-  const deleteEmployee = useMutation(apiAny.users.deleteEmployee)
-  const deleteGroup = useMutation(apiAny.users.deleteGroup)
+  const addEmployee = useMutation(api.users.addEmployee)
+  const createGroup = useMutation(api.users.createGroup)
+  const updateEmployeeGroup = useMutation(api.users.updateEmployeeGroup)
+  const deleteEmployee = useMutation(api.users.deleteEmployee)
+  const deleteGroup = useMutation(api.users.deleteGroup)
 
   // State for forms
   const [newEmployeeEmail, setNewEmployeeEmail] = useState('')
@@ -150,7 +146,7 @@ export default function ManagerDashboardPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                {organizationDetails?.name || 'Dashboard'}
+                {organizationDetails?.name ?? 'Dashboard'}
               </h1>
               <p className="mt-1 text-sm text-gray-600">Welcome back, {manager.name}</p>
             </div>
@@ -211,27 +207,27 @@ export default function ManagerDashboardPage() {
               <div className="bg-white p-6 rounded-lg shadow">
                 <p className="text-sm font-medium text-gray-600">Overall Status</p>
                 <p className="mt-2">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(analytics?.overallStatus || 'none')}`}>
-                    {analytics?.overallStatus?.toUpperCase() || 'N/A'}
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(analytics?.overallStatus ?? 'none')}`}>
+                    {analytics?.overallStatus?.toUpperCase() ?? 'N/A'}
                   </span>
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
                 <p className="text-sm font-medium text-gray-600">Response Rate</p>
                 <p className="mt-2 text-3xl font-semibold text-gray-900">
-                  {analytics?.responseRate || 0}%
+                  {analytics?.responseRate ?? 0}%
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
                 <p className="text-sm font-medium text-gray-600">Total Employees</p>
                 <p className="mt-2 text-3xl font-semibold text-gray-900">
-                  {organizationDetails?.employeeCount || 0}
+                  {organizationDetails?.employeeCount ?? 0}
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <p className="text-sm font-medium text-gray-600">Total Responses</p>
+                <p className="text-sm font-medium text-gray-600">Responses Today</p>
                 <p className="mt-2 text-3xl font-semibold text-gray-900">
-                  {analytics?.totalResponses || 0}
+                  {analytics?.responsesToday ?? 0}
                 </p>
               </div>
             </div>
@@ -241,15 +237,21 @@ export default function ManagerDashboardPage() {
               <h2 className="text-lg font-medium text-gray-900 mb-4">Status Distribution (Last 30 Days)</h2>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">{analytics?.statusCounts?.green || 0}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {analytics?.statusDistribution?.green ?? 0}
+                  </p>
                   <p className="text-sm text-gray-600">Green</p>
                 </div>
                 <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                  <p className="text-2xl font-bold text-yellow-600">{analytics?.statusCounts?.amber || 0}</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {analytics?.statusDistribution?.amber ?? 0}
+                  </p>
                   <p className="text-sm text-gray-600">Amber</p>
                 </div>
                 <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <p className="text-2xl font-bold text-red-600">{analytics?.statusCounts?.red || 0}</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {analytics?.statusDistribution?.red ?? 0}
+                  </p>
                   <p className="text-sm text-gray-600">Red</p>
                 </div>
               </div>
@@ -260,8 +262,7 @@ export default function ManagerDashboardPage() {
               <h2 className="text-lg font-medium text-gray-900 mb-4">Group Performance</h2>
               <div className="space-y-4">
                 {groupAnalytics && groupAnalytics.length > 0 ? (
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  groupAnalytics.map((group: any) => (
+                  groupAnalytics.map((group) => (
                     <div key={group.groupId} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900">{group.groupName}</h3>
@@ -273,9 +274,9 @@ export default function ManagerDashboardPage() {
                         </span>
                         <div className="text-right text-sm">
                           <p className="text-gray-600">
-                            <span className="text-green-600">{group.statusCounts?.green || 0}G</span> /
-                            <span className="text-yellow-600"> {group.statusCounts?.amber || 0}A</span> /
-                            <span className="text-red-600"> {group.statusCounts?.red || 0}R</span>
+                            <span className="text-green-600">{group.statusCounts.green}G</span> /
+                            <span className="text-yellow-600"> {group.statusCounts.amber}A</span> /
+                            <span className="text-red-600"> {group.statusCounts.red}R</span>
                           </p>
                         </div>
                       </div>
@@ -346,15 +347,14 @@ export default function ManagerDashboardPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {employees && employees.length > 0 ? (
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    employees.map((employee: any) => (
+                    employees.map((employee) => (
                       <tr key={employee._id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {employee.email}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <select
-                            value={employee.groupId || ''}
+                            value={employee.groupId ?? ''}
                             onChange={(e) => handleUpdateEmployeeGroup(
                               employee._id,
                               e.target.value ? e.target.value as Id<'groups'> : undefined
@@ -362,8 +362,7 @@ export default function ManagerDashboardPage() {
                             className="px-2 py-1 border border-gray-300 rounded-md text-sm"
                           >
                             <option value="">No Group</option>
-                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                            {groups?.map((group: any) => (
+                            {groups?.map((group) => (
                               <option key={group._id} value={group._id}>
                                 {group.name}
                               </option>
@@ -435,8 +434,7 @@ export default function ManagerDashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {groups && groups.length > 0 ? (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                groups.map((group: any) => (
+                groups.map((group) => (
                   <div key={group._id} className="bg-white p-6 rounded-lg shadow">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>

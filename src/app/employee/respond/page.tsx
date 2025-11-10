@@ -6,13 +6,8 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useQuery, useMutation } from 'convex/react'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
-
-// Type assertion to allow access to new API functions before Convex deployment
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const apiAny = api as any
 
 function EmployeeRespondContent() {
   const searchParams = useSearchParams()
@@ -26,25 +21,32 @@ function EmployeeRespondContent() {
 
   // Validate token
   const tokenValidation = useQuery(
-    apiAny.users.validateToken,
+    api.users.validateToken,
     token ? { token } : 'skip'
   )
 
   // Check if already responded today
   const hasResponded = useQuery(
-    apiAny.users.hasRespondedToday,
+    api.users.hasRespondedToday,
     tokenValidation?.employeeId
-      ? { employeeId: tokenValidation.employeeId }
+      ? { employeeId: tokenValidation.employeeId as Id<'employees'> }
       : 'skip'
   )
 
-  const submitResponse = useMutation(apiAny.users.submitResponse)
+  const submitResponse = useMutation(api.users.submitResponse)
 
   useEffect(() => {
-    if (hasResponded?.hasResponded && hasResponded.response) {
-      setSelectedStatus(hasResponded.response.status)
-      setCustomResponse(hasResponded.response.customResponse || '')
-      setIsAnonymous(hasResponded.response.isAnonymous)
+    if (hasResponded?.hasResponded && hasResponded.response &&
+        'status' in hasResponded.response &&
+        'isAnonymous' in hasResponded.response) {
+      const response = hasResponded.response as {
+        status: 'green' | 'amber' | 'red'
+        customResponse?: string
+        isAnonymous: boolean
+      }
+      setSelectedStatus(response.status)
+      setCustomResponse(response.customResponse ?? '')
+      setIsAnonymous(response.isAnonymous)
     }
   }, [hasResponded])
 
@@ -56,16 +58,16 @@ function EmployeeRespondContent() {
       return
     }
 
-    if (!tokenValidation?.valid || !tokenValidation.employeeId) {
+    if (!tokenValidation) {
       setError('Invalid or expired link')
       return
     }
 
     try {
       await submitResponse({
-        employeeId: tokenValidation.employeeId as Id<'employees'>,
+        employeeId: tokenValidation.employeeId,
         status: selectedStatus,
-        customResponse: customResponse.trim() || undefined,
+        text: customResponse.trim() || undefined,
         isAnonymous,
       })
       setSubmitted(true)
@@ -87,6 +89,7 @@ function EmployeeRespondContent() {
     )
   }
 
+  // If tokenValidation is undefined, still loading
   if (tokenValidation === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -95,13 +98,14 @@ function EmployeeRespondContent() {
     )
   }
 
-  if (!tokenValidation.valid) {
+  // If tokenValidation is null, the query failed (token invalid/expired)
+  if (tokenValidation === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="text-red-500 text-5xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Link Expired</h2>
-          <p className="text-gray-600">{tokenValidation.error}</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Link Expired or Invalid</h2>
+          <p className="text-gray-600">This link is no longer valid.</p>
           <p className="text-sm text-gray-500 mt-4">Please use the latest link from your email.</p>
         </div>
       </div>
@@ -118,7 +122,7 @@ function EmployeeRespondContent() {
             Your response has been {hasResponded?.hasResponded ? 'updated' : 'submitted'} successfully.
           </p>
           <p className="text-sm text-gray-500">
-            We appreciate you taking the time to share how you're doing.
+            We appreciate you taking the time to share how you&apos;re doing.
           </p>
         </div>
       </div>
@@ -146,7 +150,7 @@ function EmployeeRespondContent() {
             {hasResponded?.hasResponded && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  You've already responded today. You can update your response below.
+                  You&apos;ve already responded today. You can update your response below.
                 </p>
               </div>
             )}
