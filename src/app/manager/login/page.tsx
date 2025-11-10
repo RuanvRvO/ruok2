@@ -33,8 +33,21 @@ export default function ManagerLoginPage() {
       const result = await loginManager({ email, password })
       login(result)
       router.push('/manager/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+    } catch (err: unknown) {
+      console.error('Login error:', err)
+      console.error('Error type:', typeof err)
+      console.error('Error keys:', err && typeof err === 'object' ? Object.keys(err) : 'not an object')
+
+      // Convex mutations throw ConvexError objects
+      let errorMessage = 'Login failed. Please try again.'
+
+      if (err instanceof Error) {
+        errorMessage = err.message
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = String(err.message)
+      }
+
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

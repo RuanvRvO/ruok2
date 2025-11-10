@@ -59,12 +59,4 @@ export default defineSchema({
   })
     .index("by_token", ["token"])
     .index("by_employee", ["employeeId"]),
-
-  // Legacy users table (kept for compatibility)
-  users: defineTable({
-    name: v.string(),
-    email: v.string(),
-    passwordHash: v.string(),
-    createdAt: v.number(),
-  }).index("by_email", ["email"]),
 });

@@ -241,15 +241,15 @@ export default function ManagerDashboardPage() {
               <h2 className="text-lg font-medium text-gray-900 mb-4">Status Distribution (Last 30 Days)</h2>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">{analytics?.statusCounts.green || 0}</p>
+                  <p className="text-2xl font-bold text-green-600">{analytics?.statusCounts?.green || 0}</p>
                   <p className="text-sm text-gray-600">Green</p>
                 </div>
                 <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                  <p className="text-2xl font-bold text-yellow-600">{analytics?.statusCounts.amber || 0}</p>
+                  <p className="text-2xl font-bold text-yellow-600">{analytics?.statusCounts?.amber || 0}</p>
                   <p className="text-sm text-gray-600">Amber</p>
                 </div>
                 <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <p className="text-2xl font-bold text-red-600">{analytics?.statusCounts.red || 0}</p>
+                  <p className="text-2xl font-bold text-red-600">{analytics?.statusCounts?.red || 0}</p>
                   <p className="text-sm text-gray-600">Red</p>
                 </div>
               </div>
@@ -273,9 +273,9 @@ export default function ManagerDashboardPage() {
                         </span>
                         <div className="text-right text-sm">
                           <p className="text-gray-600">
-                            <span className="text-green-600">{group.statusCounts.green}G</span> /
-                            <span className="text-yellow-600"> {group.statusCounts.amber}A</span> /
-                            <span className="text-red-600"> {group.statusCounts.red}R</span>
+                            <span className="text-green-600">{group.statusCounts?.green || 0}G</span> /
+                            <span className="text-yellow-600"> {group.statusCounts?.amber || 0}A</span> /
+                            <span className="text-red-600"> {group.statusCounts?.red || 0}R</span>
                           </p>
                         </div>
                       </div>
